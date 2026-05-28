@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hannah的小金库 🐱</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fdf6ee;--card:#fff;--accent:#e8855a;--accent2:#f0b86e;--accent3:#7ec8a4;
+  --accent4:#7eb5e8;--red:#e87a7a;--text:#2d2d2d;--muted:#9a8f85;--border:#f0e8df;
+  --shadow:0 4px 24px rgba(232,133,90,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Noto Sans SC',sans-serif;color:var(--text);min-height:100vh;
+  padding:20px 16px 60px;
+  background-image:radial-gradient(circle at 80% 10%,rgba(240,184,110,0.18) 0%,transparent 50%),
+  radial-gradient(circle at 10% 90%,rgba(126,200,164,0.15) 0%,transparent 50%)}
+header{text-align:center;margin-bottom:24px;padding-top:8px}
+header h1{font-family:'DM Serif Display',serif;font-size:28px;color:var(--accent);letter-spacing:-0.5px}
+header p{font-size:13px;color:var(--muted);margin-top:4px}
+.cat{font-size:36px;display:block;margin-bottom:6px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* Tabs */
+.tabs{display:flex;background:var(--card);border-radius:14px;padding:4px;
+  box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:20px;gap:4px}
+.tab{flex:1;padding:9px 2px;border:none;border-radius:10px;background:transparent;
+  font-size:11px;font-weight:600;font-family:'Noto Sans SC',sans-serif;color:var(--muted);cursor:pointer;transition:all .2s}
+.tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(232,133,90,0.3)}
+.page{display:none}.page.active{display:block}
+
+/* Cards */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);
+  border:1px solid var(--border);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.card.c1::before{background:var(--accent)}.card.c2::before{background:var(--accent2)}
+.card.c3::before{background:var(--accent3)}.card.c4::before{background:var(--accent4)}
+.card.wide{grid-column:1/-1;text-align:center;padding:20px}
+.card .lbl{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.card .val{font-size:22px;font-weight:700;font-family:'DM Serif Display',serif}
+.card .sub{font-size:11px;color:var(--muted);margin-top:3px}
+.big-total{font-family:'DM Serif Display',serif;font-size:36px;font-weight:400;color:var(--accent)}
+
+.sec{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:12px;margin-top:20px}
+
+/* Asset rows */
+.acard{background:var(--card);border-radius:16px;padding:16px;margin-bottom:10px;
+  box-shadow:var(--shadow);border:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.aicon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ainfo{flex:1;min-width:0}
+.aname{font-size:14px;font-weight:600}
+.atag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;margin-top:4px;font-weight:500}
+.asub{font-size:11px;color:var(--muted);margin-top:3px}
+.aright{text-align:right;flex-shrink:0}
+.aamount{font-size:16px;font-weight:700;font-family:'DM Serif Display',serif}
+.aedit{font-size:11px;color:var(--accent);margin-top:4px;cursor:pointer}
+
+/* Bar */
+.bar-wrap{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:20px}
+.bar-track{height:12px;border-radius:99px;background:var(--border);overflow:hidden;display:flex;margin:12px 0 10px}
+.bar-seg{height:100%;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.bar-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:11px}
+.leg{display:flex;align-items:center;gap:5px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Buttons */
+.btn-row{display:flex;gap:10px;margin-bottom:12px}
+.btn{flex:1;padding:16px;background:var(--accent);color:#fff;border:none;border-radius:16px;
+  font-size:15px;font-weight:600;font-family:'Noto Sans SC',sans-serif;cursor:pointer;
+  box-shadow:0 4px 16px rgba(232,133,90,0.35);transition:all .15s;letter-spacing:.3px}
+.btn.sec2{background:var(--card);color:var(--accent);border:1.5px solid var(--accent);box-shadow:none}
+.btn:active{transform:scale(.97)}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);
+  z-index:100;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto}
+.overlay.open .modal{transform:translateY(0)}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:20px;text-align:center}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.fg select,.fg input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;
+  font-size:15px;font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
+.fg select:focus,.fg input:focus{border-color:var(--accent)}
+.hint{font-size:11px;color:var(--muted);margin-top:6px}
+.ttoggle{display:flex;gap:8px}
+.tbtn{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);
+  font-size:13px;font-weight:600;font-family:'Noto Sans SC',sans-serif;cursor:pointer;transition:all .15s;color:var(--muted)}
+.tbtn.ab{background:rgba(232,133,90,0.1);border-color:var(--accent);color:var(--accent)}
+.tbtn.as{background:rgba(126,200,164,0.1);border-color:var(--accent3);color:var(--accent3)}
+.sbtn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:14px;
+  font-size:15px;font-weight:700;font-family:'Noto Sans SC',sans-serif;cursor:pointer;margin-top:8px}
+.cbtn{width:100%;padding:12px;background:transparent;color:var(--muted);border:none;
+  font-size:14px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;margin-top:6px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.toggle-row span{font-size:13px;color:var(--text)}
+.toggle{position:relative;width:44px;height:24px}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:#e0d8d0;border-radius:99px;transition:.3s}
+.slider:before{position:absolute;content:'';height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked+.slider{background:var(--accent)}
+input:checked+.slider:before{transform:translateX(20px)}
+
+/* History */
+.hitem{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.hitem:last-child{border-bottom:none}
+.hdot{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.hinfo{flex:1}
+.hname{font-size:13px;font-weight:600}
+.hdate{font-size:11px;color:var(--muted);margin-top:2px}
+.hamount{font-size:15px;font-weight:700;font-family:'DM Serif Display',serif}
+.hdel{font-size:11px;color:var(--red);cursor:pointer;margin-top:3px}
+.empty{text-align:center;padding:20px;color:var(--muted);font-size:13px}
+.auto-badge{display:inline-block;font-size:9px;background:rgba(232,133,90,0.15);color:var(--accent);padding:1px 6px;border-radius:99px;margin-left:4px;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="cat">🐱</span>
+  <h1>Hannah的小金库</h1>
+  <p>好好存钱，开心花钱 ✨</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('overview')">总览</button>
+  <button class="tab" onclick="switchTab('assets')">固定资产</button>
+  <button class="tab" onclick="switchTab('invest')">投资</button>
+  <button class="tab" onclick="switchTab('history')">记录</button>
+</div>
+
+<!-- 总览 -->
+<div class="page active" id="page-overview">
+  <div class="grid">
+    <div class="card c1 wide">
+      <div class="lbl">💎 总资产</div>
+      <div class="big-total" id="grandTotal">¥0</div>
+      <div class="sub" id="grandSub">添加资产后这里会显示总计</div>
+    </div>
+    <div class="card c2">
+      <div class="lbl">🏦 固定资产</div>
+      <div class="val" id="fixedTotal">¥0</div>
+      <div class="sub">银行卡等</div>
+    </div>
+    <div class="card c3">
+      <div class="lbl">📈 投资总额</div>
+      <div class="val" id="investTotal">¥0</div>
+      <div class="sub">基金等</div>
+    </div>
+  </div>
+  <div class="bar-wrap">
+    <div class="lbl" style="font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase">资产分配</div>
+    <div class="bar-track">
+      <div class="bar-seg" id="ovSeg0" style="background:var(--accent4);width:0%"></div>
+      <div class="bar-seg" id="ovSeg1" style="background:var(--accent);width:0%"></div>
+    </div>
+    <div class="bar-legend" id="ovLegend"><span style="color:var(--muted);font-size:12px">添加资产后显示分配</span></div>
+  </div>
+  <div class="sec">所有账户一览</div>
+  <div id="overviewList"><div class="empty">还没有任何账户，去添加吧 👆</div></div>
+</div>
+
+<!-- 固定资产 -->
+<div class="page" id="page-assets">
+  <div class="btn-row">
+    <button class="btn" onclick="openModal('asset')">＋ 添加固定资产</button>
+  </div>
+  <div id="assetsList"><div class="empty">还没有固定资产记录</div></div>
+</div>
+
+<!-- 投资 -->
+<div class="page" id="page-invest">
+  <div class="btn-row">
+    <button class="btn" onclick="openModal('invest')">＋ 记录投资</button>
+    <button class="btn sec2" onclick="openModal('auto')">⏱ 设定投</button>
+  </div>
+  <div id="autoSection"></div>
+  <div class="sec">持仓</div>
+  <div id="holdingsList"><div class="empty">还没有投资记录</div></div>
+</div>
+
+<!-- 记录 -->
+<div class="page" id="page-history">
+  <div id="historyList" style="background:var(--card);border-radius:16px;padding:4px 16px;box-shadow:var(--shadow);border:1px solid var(--border)">
+    <div class="empty">暂无记录</div>
+  </div>
+</div>
+
+<!-- Modal: 固定资产 -->
+<div class="overlay" id="modalAsset" onclick="closeOut(event,'modalAsset')">
+  <div class="modal">
+    <h3>添加固定资产 🏦</h3>
+    <div class="fg">
+      <label>账户类型</label>
+      <select id="assetType">
+        <option value="中信银行卡">🏦 中信银行卡</option>
+        <option value="微信零钱">💚 微信零钱</option>
+        <option value="零钱通">💳 微信零钱通</option>
+        <option value="支付宝余额">💙 支付宝余额</option>
+        <option value="余额宝">🟡 支付宝余额宝</option>
+        <option value="现金">💵 现金</option>
+        <option value="其他银行">🏧 其他银行卡</option>
+        <option value="custom">✏️ 自定义</option>
+      </select>
+    </div>
+    <div class="fg" id="assetCustomG" style="display:none">
+      <label>自定义名称</label>
+      <input type="text" id="assetCustomName" placeholder="输入账户名称">
+    </div>
+    <div class="fg">
+      <label>当前余额（元）</label>
+      <input type="number" id="assetAmount" placeholder="例如：5000" min="0">
+    </div>
+    <div class="fg">
+      <label>备注（可选）</label>
+      <input type="text" id="assetNote" placeholder="例如：救命钱，不动">
+    </div>
+    <button class="sbtn" onclick="saveAsset()">确认添加</button>
+    <button class="cbtn" onclick="closeModal('modalAsset')">取消</button>
+  </div>
+</div>
+
+<!-- Modal: 投资 -->
+<div class="overlay" id="modalInvest" onclick="closeOut(event,'modalInvest')">
+  <div class="modal">
+    <h3>记录投资 📝</h3>
+    <div class="fg">
+      <label>操作类型</label>
+      <div class="ttoggle">
+        <button class="tbtn ab" id="btnBuy" onclick="setType('buy')">买入 ↑</button>
+        <button class="tbtn" id="btnSell" onclick="setType('sell')">卖出 ↓</button>
+      </div>
+    </div>
+    <div class="fg">
+      <label>选择基金</label>
+      <select id="fundSelect">
+        <option value="易方达债券A">📘 易方达稳健收益债券A</option>
+        <option value="广发纳斯达克100">🚀 广发纳斯达克100ETF</option>
+        <option value="其他基金">✏️ 其他基金</option>
+      </select>
+    </div>
+    <div class="fg" id="fundCustomG" style="display:none">
+      <label>自定义名称</label>
+      <input type="text" id="fundCustomName" placeholder="输入基金名称">
+    </div>
+    <div class="fg">
+      <label>金额（元）</label>
+      <input type="number" id="investAmount" placeholder="例如：100" min="0">
+    </div>
+    <div class="fg">
+      <label>日期</label>
+      <input type="date" id="investDate">
+    </div>
+    <div class="fg">
+      <label>备注（可选）</label>
+      <input type="text" id="investNote" placeholder="例如：加仓、月定投…">
+    </div>
+    <button class="sbtn" onclick="addInvestRecord()">确认记录</button>
+    <button class="cbtn" onclick="closeModal('modalInvest')">取消</button>
+  </div>
+</div>
+
+<!-- Modal: 定投 -->
+<div class="overlay" id="modalAuto" onclick="closeOut(event,'modalAuto')">
+  <div class="modal">
+    <h3>设置自动定投 ⏱</h3>
+    <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px">每天打开网页时自动记录一笔定投</p>
+    <div class="fg">
+      <label>定投基金</label>
+      <select id="autoFund">
+        <option value="广发纳斯达克100">🚀 广发纳斯达克100ETF</option>
+        <option value="易方达债券A">📘 易方达稳健收益债券A</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>定投频率</label>
+      <select id="autoFreq">
+        <option value="daily">每天</option>
+        <option value="weekly">每周</option>
+        <option value="monthly">每月</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>每次金额（元）</label>
+      <input type="number" id="autoAmount" placeholder="例如：10" min="1" value="10">
+    </div>
+    <div class="fg">
+      <label>扣款账户（自动扣减余额）</label>
+      <select id="autoLinked">
+        <option value="">不关联账户</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>开始日期（补录历史记录）</label>
+      <input type="date" id="autoStart">
+      <div class="hint">保存后自动补录从该日期到今天的所有定投记录</div>
+    </div>
+    <div class="fg">
+      <label>状态</label>
+      <div class="toggle-row">
+        <span>开启自动定投</span>
+        <label class="toggle"><input type="checkbox" id="autoEnabled" checked><span class="slider"></span></label>
+      </div>
+    </div>
+    <button class="sbtn" onclick="saveAutoConf()">保存设置</button>
+    <button class="cbtn" onclick="closeModal('modalAuto')">取消</button>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────
+const ASSET_INFO = {
+  '中信银行卡': {icon:'🏦',color:'#7eb5e8',tag:'银行卡', tagBg:'rgba(126,181,232,0.15)',tagColor:'#7eb5e8'},
+  '微信零钱':   {icon:'💚',color:'#7ec8a4',tag:'微信',   tagBg:'rgba(126,200,164,0.15)',tagColor:'#5ab88a'},
+  '零钱通':     {icon:'💳',color:'#5ab88a',tag:'救命钱', tagBg:'rgba(90,184,138,0.15)', tagColor:'#3a9870'},
+  '支付宝余额': {icon:'💙',color:'#7eb5e8',tag:'支付宝', tagBg:'rgba(126,181,232,0.15)',tagColor:'#5a9fd4'},
+  '余额宝':     {icon:'🟡',color:'#f0b86e',tag:'备用金', tagBg:'rgba(240,184,110,0.15)',tagColor:'#e8a84a'},
+  '现金':       {icon:'💵',color:'#c4a7e8',tag:'现金',   tagBg:'rgba(196,167,232,0.15)',tagColor:'#a07ec8'},
+  '其他银行':   {icon:'🏧',color:'#7eb5e8',tag:'银行卡', tagBg:'rgba(126,181,232,0.15)',tagColor:'#7eb5e8'},
+};
+const FUND_INFO = {
+  '易方达债券A':     {icon:'📘',color:'#7ec8a4',tag:'债券基金',tagBg:'rgba(126,200,164,0.15)',tagColor:'#5ab88a'},
+  '广发纳斯达克100': {icon:'🚀',color:'#e8855a',tag:'指数基金',tagBg:'rgba(232,133,90,0.15)', tagColor:'#e8855a'},
+};
+function getAI(n){return ASSET_INFO[n]||{icon:'✨',color:'#c4a7e8',tag:'账户',tagBg:'rgba(196,167,232,0.15)',tagColor:'#a07ec8'}}
+function getFI(n){return FUND_INFO[n] ||{icon:'📊',color:'#c4a7e8',tag:'基金', tagBg:'rgba(196,167,232,0.15)',tagColor:'#a07ec8'}}
+
+let assets  = JSON.parse(localStorage.getItem('hk_assets')  ||'[]');
+let records = JSON.parse(localStorage.getItem('hk_records') ||'[]');
+let autoConf= JSON.parse(localStorage.getItem('hk_auto')    ||'{"enabled":false,"fund":"广发纳斯达克100","amount":10,"linked":"","freq":"daily","startDate":""}');
+let txType  = 'buy';
+
+// ── Auto DCA ──────────────────────────────────────────
+function checkAutoDCA(){
+  if(!autoConf.enabled) return;
+  const today = new Date().toDateString();
+  const last  = localStorage.getItem('hk_auto_last');
+  const freq  = autoConf.freq||'daily';
+  let shouldRun = false;
+  if(freq==='daily'   && last!==today) shouldRun=true;
+  if(freq==='weekly'){const now=new Date();const ld=last?new Date(last):null;if(!ld||(now-ld)>=7*86400000)shouldRun=true;}
+  if(freq==='monthly'){const now=new Date();const ld=last?new Date(last):null;if(!ld||now.getMonth()!==ld.getMonth()||now.getFullYear()!==ld.getFullYear())shouldRun=true;}
+  if(!shouldRun) return;
+  addAutoRecord(new Date());
+  localStorage.setItem('hk_auto_last', today);
+}
+
+function addAutoRecord(date){
+  records.unshift({
+    name:autoConf.fund, amount:autoConf.amount, type:'buy', note:'自动定投',
+    date:date.toLocaleDateString('zh-CN',{month:'short',day:'numeric'}),
+    ts:date.getTime(), auto:true
+  });
+  if(autoConf.linked){
+    const ai=assets.findIndex(a=>a.name===autoConf.linked);
+    if(ai>=0&&assets[ai].amount>=autoConf.amount){
+      assets[ai].amount=Math.round((assets[ai].amount-autoConf.amount)*100)/100;
+      localStorage.setItem('hk_assets',JSON.stringify(assets));
+    }
+  }
+  localStorage.setItem('hk_records',JSON.stringify(records));
+}
+
+function backfillDCA(startStr){
+  const freq  = autoConf.freq||'daily';
+  const start = new Date(startStr);
+  const today = new Date(); today.setHours(23,59,59,999);
+  const existing = new Set(records.filter(r=>r.auto).map(r=>new Date(r.ts).toDateString()));
+  let newCount=0, cursor=new Date(start);
+  while(cursor<=today){
+    if(!existing.has(cursor.toDateString())){
+      const d=new Date(cursor);
+      records.push({name:autoConf.fund,amount:autoConf.amount,type:'buy',note:'自动定投',
+        date:d.toLocaleDateString('zh-CN',{month:'short',day:'numeric'}),ts:d.getTime(),auto:true});
+      if(autoConf.linked){
+        const ai=assets.findIndex(a=>a.name===autoConf.linked);
+        if(ai>=0&&assets[ai].amount>=autoConf.amount)
+          assets[ai].amount=Math.round((assets[ai].amount-autoConf.amount)*100)/100;
+      }
+      newCount++;
+    }
+    if(freq==='daily')   cursor.setDate(cursor.getDate()+1);
+    else if(freq==='weekly')  cursor.setDate(cursor.getDate()+7);
+    else if(freq==='monthly') cursor.setMonth(cursor.getMonth()+1);
+  }
+  if(newCount>0){
+    records.sort((a,b)=>b.ts-a.ts);
+    localStorage.setItem('hk_records',JSON.stringify(records));
+    localStorage.setItem('hk_assets',JSON.stringify(assets));
+    localStorage.setItem('hk_auto_last',new Date().toDateString());
+    alert('已补录 '+newCount+' 笔定投记录 ✅');
+  }
+}
+
+// ── Delete record ─────────────────────────────────────
+function deleteRecord(ts){
+  if(!confirm('确定删除这条记录？'))return;
+  const r=records.find(x=>x.ts===ts);
+  // Refund to linked account if auto record
+  if(r&&r.auto&&autoConf.linked){
+    const ai=assets.findIndex(a=>a.name===autoConf.linked);
+    if(ai>=0){assets[ai].amount=Math.round((assets[ai].amount+r.amount)*100)/100;
+      localStorage.setItem('hk_assets',JSON.stringify(assets));}
+  }
+  records=records.filter(x=>x.ts!==ts);
+  localStorage.setItem('hk_records',JSON.stringify(records));
+  render();
+}
+
+// ── Tabs ──────────────────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active',['overview','assets','invest','history'][i]===tab);
+  });
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  render();
+}
+
+// ── Modals ────────────────────────────────────────────
+function openModal(type){
+  if(type==='asset'){
+    document.getElementById('modalAsset').classList.add('open');
+  }
+  if(type==='invest'){
+    document.getElementById('investDate').value=new Date().toISOString().split('T')[0];
+    document.getElementById('modalInvest').classList.add('open');
+  }
+  if(type==='auto'){
+    document.getElementById('autoAmount').value=autoConf.amount;
+    document.getElementById('autoEnabled').checked=autoConf.enabled;
+    document.getElementById('autoFund').value=autoConf.fund;
+    document.getElementById('autoFreq').value=autoConf.freq||'daily';
+    document.getElementById('autoStart').value=autoConf.startDate||new Date().toISOString().split('T')[0];
+    // Populate linked accounts
+    const sel=document.getElementById('autoLinked');
+    sel.innerHTML='<option value="">不关联账户</option>';
+    assets.forEach(a=>{const o=document.createElement('option');o.value=a.name;o.textContent=a.name+' (¥'+a.amount.toFixed(0)+')';sel.appendChild(o);});
+    sel.value=autoConf.linked||'';
+    document.getElementById('modalAuto').classList.add('open');
+  }
+}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function closeOut(e,id){if(e.target===document.getElementById(id))closeModal(id)}
+
+// Listeners
+document.getElementById('assetType').addEventListener('change',function(){
+  document.getElementById('assetCustomG').style.display=this.value==='custom'?'block':'none';
+});
+document.getElementById('fundSelect').addEventListener('change',function(){
+  document.getElementById('fundCustomG').style.display=this.value==='其他基金'?'block':'none';
+});
+function setType(t){
+  txType=t;
+  document.getElementById('btnBuy').className ='tbtn'+(t==='buy' ?' ab':'');
+  document.getElementById('btnSell').className='tbtn'+(t==='sell'?' as':'');
+}
+
+// ── Save functions ────────────────────────────────────
+function saveAsset(){
+  const tv=document.getElementById('assetType').value;
+  const name=tv==='custom'?(document.getElementById('assetCustomName').value.trim()||'账户'):tv;
+  const amount=parseFloat(document.getElementById('assetAmount').value);
+  const note=document.getElementById('assetNote').value.trim();
+  if(!amount||amount<=0){alert('请输入有效金额 😊');return}
+  const ei=assets.findIndex(a=>a.name===name);
+  const obj={name,amount,note,updated:new Date().toLocaleDateString('zh-CN',{month:'short',day:'numeric'})};
+  if(ei>=0)assets[ei]=obj;else assets.push(obj);
+  localStorage.setItem('hk_assets',JSON.stringify(assets));
+  closeModal('modalAsset');
+  document.getElementById('assetAmount').value='';
+  document.getElementById('assetNote').value='';
+  render();
+}
+
+function editAsset(name){
+  const a=assets.find(x=>x.name===name);if(!a)return;
+  const val=prompt('更新「'+name+'」的余额（当前：¥'+a.amount+'）：');
+  if(val===null)return;
+  const n=parseFloat(val);if(isNaN(n)||n<0){alert('请输入有效金额');return}
+  a.amount=n;a.updated=new Date().toLocaleDateString('zh-CN',{month:'short',day:'numeric'});
+  localStorage.setItem('hk_assets',JSON.stringify(assets));render();
+}
+
+function addInvestRecord(){
+  const fv=document.getElementById('fundSelect').value;
+  const name=fv==='其他基金'?(document.getElementById('fundCustomName').value.trim()||'基金'):fv;
+  const amount=parseFloat(document.getElementById('investAmount').value);
+  const note=document.getElementById('investNote').value.trim();
+  const dateVal=document.getElementById('investDate').value;
+  if(!amount||amount<=0){alert('请输入有效金额 😊');return}
+  const dateObj=dateVal?new Date(dateVal):new Date();
+  records.unshift({name,amount,type:txType,note,
+    date:dateObj.toLocaleDateString('zh-CN',{month:'short',day:'numeric'}),ts:dateObj.getTime()});
+  records.sort((a,b)=>b.ts-a.ts);
+  localStorage.setItem('hk_records',JSON.stringify(records));
+  closeModal('modalInvest');
+  document.getElementById('investAmount').value='';
+  document.getElementById('investNote').value='';
+  render();
+}
+
+function saveAutoConf(){
+  const newStart=document.getElementById('autoStart').value;
+  const oldStart=autoConf.startDate||'';
+  autoConf={
+    enabled:document.getElementById('autoEnabled').checked,
+    fund:document.getElementById('autoFund').value,
+    amount:parseFloat(document.getElementById('autoAmount').value)||10,
+    linked:document.getElementById('autoLinked').value,
+    freq:document.getElementById('autoFreq').value,
+    startDate:newStart
+  };
+  localStorage.setItem('hk_auto',JSON.stringify(autoConf));
+  if(!autoConf.enabled){localStorage.removeItem('hk_auto_last');closeModal('modalAuto');render();return;}
+  if(newStart&&newStart!==oldStart) backfillDCA(newStart);
+  closeModal('modalAuto');render();
+}
+
+// ── Render ────────────────────────────────────────────
+function render(){
+  // Compute holdings
+  const holdings={};
+  records.forEach(r=>{
+    if(!holdings[r.name])holdings[r.name]=0;
+    holdings[r.name]+=r.type==='buy'?r.amount:-r.amount;
+  });
+  const investSum=Object.values(holdings).reduce((a,b)=>a+Math.max(b,0),0);
+  const fixedSum=assets.reduce((a,b)=>a+b.amount,0);
+  const grandSum=investSum+fixedSum;
+
+  // Overview
+  document.getElementById('grandTotal').textContent='¥'+grandSum.toFixed(0);
+  document.getElementById('fixedTotal').textContent='¥'+fixedSum.toFixed(0);
+  document.getElementById('investTotal').textContent='¥'+investSum.toFixed(0);
+  document.getElementById('grandSub').textContent=grandSum>0?'加油！财富在积累中 🌱':'添加资产后这里会显示总计';
+  const fp=grandSum>0?(fixedSum/grandSum*100).toFixed(1):0;
+  const ip=grandSum>0?(investSum/grandSum*100).toFixed(1):0;
+  document.getElementById('ovSeg0').style.width=fp+'%';
+  document.getElementById('ovSeg1').style.width=ip+'%';
+  document.getElementById('ovLegend').innerHTML=grandSum>0
+    ?`<div class="leg"><div class="dot" style="background:var(--accent4)"></div>固定资产 ${fp}%</div>
+      <div class="leg"><div class="dot" style="background:var(--accent)"></div>投资 ${ip}%</div>`
+    :'<span style="color:var(--muted);font-size:12px">添加资产后显示分配</span>';
+
+  // Overview list
+  const allItems=[
+    ...assets.map(a=>({name:a.name,amount:a.amount,type:'asset'})),
+    ...Object.keys(holdings).filter(k=>holdings[k]>0).map(k=>({name:k,amount:holdings[k],type:'invest'}))
+  ];
+  document.getElementById('overviewList').innerHTML=allItems.length?allItems.map(item=>{
+    const info=item.type==='asset'?getAI(item.name):getFI(item.name);
+    return`<div class="acard">
+      <div class="aicon" style="background:${info.color}22">${info.icon}</div>
+      <div class="ainfo"><div class="aname">${item.name}</div>
+        <span class="atag" style="background:${info.tagBg};color:${info.tagColor}">${info.tag}</span></div>
+      <div class="aright"><div class="aamount">¥${item.amount.toFixed(0)}</div></div>
+    </div>`;
+  }).join(''):'<div class="empty">还没有任何账户，去添加吧 👆</div>';
+
+  // Assets
+  document.getElementById('assetsList').innerHTML=assets.length?assets.map(a=>{
+    const info=getAI(a.name);
+    return`<div class="acard">
+      <div class="aicon" style="background:${info.color}22">${info.icon}</div>
+      <div class="ainfo"><div class="aname">${a.name}</div>
+        <span class="atag" style="background:${info.tagBg};color:${info.tagColor}">${info.tag}</span>
+        ${a.note?`<div class="asub">${a.note}</div>`:''}
+      </div>
+      <div class="aright"><div class="aamount">¥${a.amount.toFixed(0)}</div>
+        <div class="aedit" onclick="editAsset('${a.name}')">更新余额</div></div>
+    </div>`;
+  }).join(''):'<div class="empty">还没有固定资产记录</div>';
+
+  // Auto section
+  const as=document.getElementById('autoSection');
+  if(autoConf.enabled){
+    const fi=getFI(autoConf.fund);
+    const freqMap={'daily':'每天','weekly':'每周','monthly':'每月'};
+    as.innerHTML=`<div class="acard" style="border:1.5px solid var(--accent);background:rgba(232,133,90,0.04)">
+      <div class="aicon" style="background:${fi.color}22">${fi.icon}</div>
+      <div class="ainfo"><div class="aname">${autoConf.fund} <span class="auto-badge">自动定投</span></div>
+        <div class="asub">${freqMap[autoConf.freq||'daily']} ¥${autoConf.amount}${autoConf.linked?' · 扣款：'+autoConf.linked:''}</div></div>
+      <div class="aright"><div class="aedit" onclick="openModal('auto')">修改</div></div>
+    </div>`;
+  } else as.innerHTML='';
+
+  // Holdings
+  const hkeys=Object.keys(holdings).filter(k=>holdings[k]>0);
+  document.getElementById('holdingsList').innerHTML=hkeys.length?hkeys.map(k=>{
+    const info=getFI(k);
+    const pct=investSum>0?(holdings[k]/investSum*100).toFixed(1):0;
+    return`<div class="acard">
+      <div class="aicon" style="background:${info.color}22">${info.icon}</div>
+      <div class="ainfo"><div class="aname">${k}</div>
+        <span class="atag" style="background:${info.tagBg};color:${info.tagColor}">${info.tag}</span></div>
+      <div class="aright"><div class="aamount">¥${holdings[k].toFixed(0)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${pct}%</div></div>
+    </div>`;
+  }).join(''):'<div class="empty">还没有投资记录</div>';
+
+  // History with delete button
+  document.getElementById('historyList').innerHTML=records.length?records.map(r=>{
+    const info=getFI(r.name);
+    const sign=r.type==='buy'?'+':'-';
+    const color=r.type==='buy'?'var(--accent)':'var(--accent3)';
+    const autoBadge=r.auto?'<span class="auto-badge">自动</span>':'';
+    return`<div class="hitem">
+      <div class="hdot" style="background:${info.color}22">${info.icon}</div>
+      <div class="hinfo">
+        <div class="hname">${r.name}${autoBadge}${r.note?' · '+r.note:''}</div>
+        <div class="hdate">${r.date} · ${r.type==='buy'?'买入':'卖出'}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="hamount" style="color:${color}">${sign}¥${r.amount.toFixed(0)}</div>
+        <div class="hdel" onclick="deleteRecord(${r.ts})">删除</div>
+      </div>
+    </div>`;
+  }).join(''):'<div class="empty">暂无记录</div>';
+}
+
+checkAutoDCA();
+render();
+</script>
+</body>
+</html>
