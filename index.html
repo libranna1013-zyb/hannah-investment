@@ -336,18 +336,23 @@ let autoConf= JSON.parse(localStorage.getItem('hk_auto')    ||'{"enabled":false,
 let txType  = 'buy';
 
 // ── Auto DCA ──────────────────────────────────────────
+function getTodayStr(){
+  const d=new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0');
+}
+
 function checkAutoDCA(){
   if(!autoConf.enabled) return;
-  const today = new Date().toDateString();
+  const todayStr = getTodayStr();
   const last  = localStorage.getItem('hk_auto_last');
   const freq  = autoConf.freq||'daily';
   let shouldRun = false;
-  if(freq==='daily'   && last!==today) shouldRun=true;
+  if(freq==='daily' && last!==todayStr) shouldRun=true;
   if(freq==='weekly'){const now=new Date();const ld=last?new Date(last):null;if(!ld||(now-ld)>=7*86400000)shouldRun=true;}
   if(freq==='monthly'){const now=new Date();const ld=last?new Date(last):null;if(!ld||now.getMonth()!==ld.getMonth()||now.getFullYear()!==ld.getFullYear())shouldRun=true;}
   if(!shouldRun) return;
   addAutoRecord(new Date());
-  localStorage.setItem('hk_auto_last', today);
+  localStorage.setItem('hk_auto_last', todayStr);
 }
 
 function addAutoRecord(date){
@@ -392,7 +397,7 @@ function backfillDCA(startStr){
     records.sort((a,b)=>b.ts-a.ts);
     localStorage.setItem('hk_records',JSON.stringify(records));
     localStorage.setItem('hk_assets',JSON.stringify(assets));
-    localStorage.setItem('hk_auto_last',new Date().toDateString());
+    const td=new Date();localStorage.setItem('hk_auto_last',td.getFullYear()+'-'+(td.getMonth()+1).toString().padStart(2,'0')+'-'+td.getDate().toString().padStart(2,'0'));
     alert('已补录 '+newCount+' 笔定投记录 ✅');
   }
 }
